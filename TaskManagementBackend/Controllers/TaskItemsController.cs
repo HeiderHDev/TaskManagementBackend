@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using TaskManagementBackend.Context;
+using TaskManagementBackend.DTOs;
 using TaskManagementBackend.Models;
 
 namespace TaskManagementBackend.Controllers
@@ -80,8 +81,17 @@ namespace TaskManagementBackend.Controllers
         // POST: api/TaskItems
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<TaskItem>> PostTaskItem(TaskItem taskItem)
+        public async Task<ActionResult<TaskItem>> PostTaskItem([FromBody] CreateTaskItemDto createTaskDto)
         {
+
+            var taskItem = new TaskItem
+            {
+                Title = createTaskDto.Title,
+                Description = createTaskDto.Description,
+                IsComplete = createTaskDto.IsComplete
+                // Los otros campos se inicializarán con sus valores por defecto
+            };
+
             _context.TaskItems.Add(taskItem);
             await _context.SaveChangesAsync();
 
