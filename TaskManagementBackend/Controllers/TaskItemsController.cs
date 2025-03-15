@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
 using TaskManagementBackend.Context;
 using TaskManagementBackend.Models;
@@ -23,6 +25,7 @@ namespace TaskManagementBackend.Controllers
 
         // GET: api/TaskItems
         [HttpGet]
+        [OutputCache]
         public async Task<ActionResult<IEnumerable<TaskItem>>> GetTaskItems()
         {
             return await _context.TaskItems.ToListAsync();
@@ -30,6 +33,7 @@ namespace TaskManagementBackend.Controllers
 
         // GET: api/TaskItems/5
         [HttpGet("{id}")]
+        [OutputCache]
         public async Task<ActionResult<TaskItem>> GetTaskItem(long id)
         {
             var taskItem = await _context.TaskItems.FindAsync(id);
@@ -81,7 +85,8 @@ namespace TaskManagementBackend.Controllers
             _context.TaskItems.Add(taskItem);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetTaskItem", new { id = taskItem.Id }, taskItem);
+            //return CreatedAtAction("GetTaskItem", new { id = taskItem.Id }, taskItem);
+            return CreatedAtAction(nameof(GetTaskItem), new { id = taskItem.Id }, taskItem);
         }
 
         // DELETE: api/TaskItems/5
