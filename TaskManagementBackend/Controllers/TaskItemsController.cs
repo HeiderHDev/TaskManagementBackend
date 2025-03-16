@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
@@ -18,24 +13,31 @@ namespace TaskManagementBackend.Controllers
     public class TaskItemsController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IOutputCacheStore outputCacheStore;
+        private readonly IMapper mapper;
+        private const string cacheTag = "TaskItems";
 
-        public TaskItemsController(AppDbContext context)
+        public TaskItemsController(AppDbContext context, IOutputCacheStore outputCacheStore, IMapper mapper)
         {
             _context = context;
+            this.outputCacheStore = outputCacheStore;
+            this.mapper = mapper;
         }
 
         // GET: api/TaskItems
         [HttpGet]
-        [OutputCache]
-        public async Task<ActionResult<IEnumerable<TaskItem>>> GetTaskItems()
+        [OutputCache(Tags = [cacheTag])]
+        public async Task<ActionResult<IEnumerable<TaskItemDTO>>> GetTaskItems()
         {
-            return await _context.TaskItems.ToListAsync();
+            var taskItems = await _context.TaskItems.ToListAsync();
+            var taskItemsDto = mapper.Map<List<TaskItemDTO>>(taskItems);
+            return taskItemsDto;
         }
 
         // GET: api/TaskItems/5
         [HttpGet("{id}")]
-        [OutputCache]
-        public async Task<ActionResult<TaskItem>> GetTaskItem(long id)
+        [OutputCache(Tags = [cacheTag])]
+        public async Task<ActionResult<TaskItemDTO>> GetTaskItem(long id)
         {
             var taskItem = await _context.TaskItems.FindAsync(id);
 
@@ -44,7 +46,9 @@ namespace TaskManagementBackend.Controllers
                 return NotFound();
             }
 
-            return taskItem;
+            var taskItemDto = mapper.Map<TaskItemDTO>(taskItem);
+
+            return taskItemDto;
         }
 
         // PUT: api/TaskItems/5
@@ -81,19 +85,12 @@ namespace TaskManagementBackend.Controllers
         // POST: api/TaskItems
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<TaskItem>> PostTaskItem([FromBody] CreateTaskItemDto createTaskDto)
+        public async Task<IActionResult> PostTaskItem([FromBody] CreateTaskItemDto createTaskDto)
         {
-
-            var taskItem = new TaskItem
-            {
-                Title = createTaskDto.Title,
-                Description = createTaskDto.Description,
-                IsComplete = createTaskDto.IsComplete
-                // Los otros campos se inicializarán con sus valores por defecto
-            };
-
+            var taskItem = mapper.Map<TaskItem>(createTaskDto);
             _context.TaskItems.Add(taskItem);
             await _context.SaveChangesAsync();
+            await outputCacheStore.EvictByTagAsync(cacheTag, default); 
 
             //return CreatedAtAction("GetTaskItem", new { id = taskItem.Id }, taskItem);
             return CreatedAtAction(nameof(GetTaskItem), new { id = taskItem.Id }, taskItem);
