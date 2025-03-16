@@ -19,10 +19,15 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddOutputCache(opciones =>
 {
     opciones.DefaultExpirationTimeSpan = TimeSpan.FromSeconds(30);
-
-
 });
 
+builder.Services.AddCors(opciones =>
+{
+    opciones.AddDefaultPolicy(opcionesCORS =>
+    {
+        opcionesCORS.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
 
