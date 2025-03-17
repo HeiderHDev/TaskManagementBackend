@@ -3,7 +3,6 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
 using TaskManagementBackend.Context;
 using TaskManagementBackend.DTOs;
 using TaskManagementBackend.Models;
@@ -29,9 +28,13 @@ namespace TaskManagementBackend.Controllers
 
         [HttpGet]
         [OutputCache(Tags = [cacheTag])]
-        public async Task<ActionResult<IEnumerable<TaskItemDTO>>> GetTaskItems([FromQuery] PaginationDTO pagination)
+        public async Task<ActionResult<IEnumerable<TaskItemDTO>>> GetTaskItems([FromQuery] PaginationDTO pagination, [FromQuery] bool? isComplete)
         {
-            var queryable = _context.TaskItems;
+            var queryable = _context.TaskItems.AsQueryable();
+            if (isComplete.HasValue)
+            {
+                queryable = queryable.Where(task => task.IsComplete == isComplete.Value);
+            }
             await HttpContext.InsertPaginationParametersInHeader(queryable);
             return await queryable
                 .OrderByDescending(task => task.Id)
