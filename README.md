@@ -160,7 +160,9 @@ API/
 
 ## 🌐 Demo en Vivo
 ![Imagen del frontend](./src/app/assets/img/app.png)
-Enlaces:
+[Proyecto desplegado en AWS](https://master.d349vgtrapygbd.amplifyapp.com/tareas)
+https://master.d349vgtrapygbd.amplifyapp.com/tareas
+
 
 
 ## 👨‍💻 Desarrollador
