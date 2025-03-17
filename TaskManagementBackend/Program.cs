@@ -4,8 +4,10 @@ using TaskManagementBackend.Context;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("Connection");
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<AppDbContext>(opciones =>
+{
+    opciones.UseSqlServer("name=DefaultConnection");
+});
 
 
 builder.Services.AddControllers();
@@ -37,10 +39,6 @@ builder.Services.AddCors(opciones =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    
-}
 app.UseSwagger();
 app.UseSwaggerUI();
 
